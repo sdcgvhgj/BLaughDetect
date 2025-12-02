@@ -1,8 +1,5 @@
 import os
-os.environ['HTTP_PROXY'] = 'http://127.0.0.1:10809'
-os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:10809'
-os.environ['http_proxy'] = 'http://127.0.0.1:10809'
-os.environ['https_proxy'] = 'http://127.0.0.1:10809'
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 
 from huggingface_hub import snapshot_download
 
