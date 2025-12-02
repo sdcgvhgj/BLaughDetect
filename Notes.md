@@ -133,3 +133,5 @@ flowchart LR
   - SANM 将多头注意力与深度可分离卷积记忆（FSMN）相加，兼顾局部与长程依赖，友好流式。
 
 https://www.gradio.app/guides/real-time-speech-recognition
+
+https://github.com/kaldi-asr/kaldi/tree/master

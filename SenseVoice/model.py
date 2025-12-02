@@ -809,15 +809,75 @@ class SenseVoiceSmall(nn.Module):
                 tokenizer=tokenizer,
             )
             time2 = time.perf_counter()
+
+            # 打印数据加载信息
+            print(f"=== 数据加载阶段 ===")
+            print(f"frontend.fs: {frontend.fs}")
+            print(f"audio_fs: {kwargs.get('fs', 16000)}")
+            print(f"data_type: {kwargs.get('data_type', 'sound')}")
+            print(f"frontend类型: {type(frontend)}")
+            print(f"tokenizer类型: {type(tokenizer)}")
+            print(f"加载的音频样本数量: {len(audio_sample_list)}")
+            if len(audio_sample_list) > 0:
+                print(f"第一个音频样本类型: {type(audio_sample_list[0])}")
+                if hasattr(audio_sample_list[0], 'shape'):
+                    print(f"第一个音频样本形状: {audio_sample_list[0].shape}")
+                elif hasattr(audio_sample_list[0], '__len__'):
+                    print(f"第一个音频样本长度: {len(audio_sample_list[0])}")
+
             meta_data["load_data"] = f"{time2 - time1:0.3f}"
+            print(f"数据加载耗时: {time2 - time1:.3f}秒")
+
+            # 特征提取
             speech, speech_lengths = extract_fbank(
                 audio_sample_list, data_type=kwargs.get("data_type", "sound"), frontend=frontend
             )
             time3 = time.perf_counter()
+
+            # 打印特征提取信息
+            print(f"\n=== 特征提取阶段 ===")
+            print(f"speech类型: {type(speech)}")
+            print(f"speech形状: {speech.shape if hasattr(speech, 'shape') else 'No shape'}")
+            print(f"speech_lengths: {speech_lengths}")
+            print(f"speech_lengths形状: {speech_lengths.shape}")
+            print(f"批次大小: {len(speech_lengths)}")
+            print(f"总时间步数: {speech_lengths.sum().item()}")
+
+            # 打印frontend详细信息
+            print(f"\n=== Frontend配置 ===")
+            frontend_attrs = [attr for attr in dir(frontend) if not attr.startswith('_')]
+            print(f"frontend可用属性: {frontend_attrs}")
+            if hasattr(frontend, 'frame_shift'):
+                print(f"frame_shift: {frontend.frame_shift}")
+            if hasattr(frontend, 'lfr_n'):
+                print(f"lfr_n: {frontend.lfr_n}")
+            if hasattr(frontend, 'fs'):
+                print(f"fs: {frontend.fs}")
+            if hasattr(frontend, 'frame_length'):
+                print(f"frame_length: {frontend.frame_length}")
+
             meta_data["extract_feat"] = f"{time3 - time2:0.3f}"
-            meta_data["batch_data_time"] = (
-                speech_lengths.sum().item() * frontend.frame_shift * frontend.lfr_n / 1000
-            )
+            batch_data_time = speech_lengths.sum().item() * frontend.frame_shift * frontend.lfr_n / 1000
+            meta_data["batch_data_time"] = batch_data_time
+
+            # 打印最终结果
+            print(f"\n=== 最终结果 ===")
+            print(f"特征提取耗时: {time3 - time2:.3f}秒")
+            print(f"批次总音频时长: {batch_data_time:.3f}秒")
+            print(f"特征数据形状: {speech.shape}")
+            print(f"各样本长度: {speech_lengths.tolist()}")
+            print(f"元数据: {meta_data}")
+
+            # 打印数据类型信息
+            print(f"\n=== 数据类型信息 ===")
+            print(f"speech数据类型: {speech.dtype if hasattr(speech, 'dtype') else 'Unknown'}")
+            print(f"speech_lengths数据类型: {speech_lengths.dtype}")
+
+            # 打印统计信息
+            if hasattr(speech, 'min') and hasattr(speech, 'max'):
+                print(f"特征值范围: [{speech.min().item():.3f}, {speech.max().item():.3f}]")
+            if hasattr(speech, 'mean'):
+                print(f"特征均值: {speech.mean().item():.3f}")
 
         speech = speech.to(device=kwargs["device"])
         speech_lengths = speech_lengths.to(device=kwargs["device"])

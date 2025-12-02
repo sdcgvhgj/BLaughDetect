@@ -16,8 +16,8 @@ from funasr import AutoModel
 
 model = "./SenseVoiceSmall"
 model = AutoModel(model=model,
-				  vad_model="iic/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-				  vad_kwargs={"max_single_segment_time": 30000},
+				#   vad_model="iic/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+				#   vad_kwargs={"max_single_segment_time": 30000},
 				  trust_remote_code=True,
 				  )
 
@@ -136,7 +136,8 @@ def format_str_v3(s):
 			new_s = new_s[:-1]
 		new_s += s_list[i].strip().lstrip()
 	new_s = new_s.replace("The.", " ")
-	return new_s.strip()
+	return cur_ent_event
+	# return new_s.strip()
 
 def model_inference(input_wav, language = '', fs=16000):
 	# task_abbr = {"Speech Recognition": "ASR", "Rich Text Transcription": ("ASR", "AED", "SER")}
@@ -162,13 +163,12 @@ def model_inference(input_wav, language = '', fs=16000):
 			input_wav = resampler(input_wav_t[None, :])[0, :].numpy()
 	
 	
-	merge_vad = True #False if selected_task == "ASR" else True
-	print(f"language: {language}, merge_vad: {merge_vad}")
+	print(f"language: {language}")
 	text = model.generate(input=input_wav,
 						  cache={},
 						  language=language,
 						  use_itn=True,
-						  batch_size_s=60, merge_vad=merge_vad)
+						  batch_size_s=60)
 	
 	print(text)
 	text = text[0]["text"]
